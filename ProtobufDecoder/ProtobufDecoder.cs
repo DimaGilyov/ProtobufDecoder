@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace ProtobufDecoder
 {
+    /// <summary>
+    /// https://developers.google.com/protocol-buffers/docs/encoding
+    /// </summary>
     internal class ProtobufDecoder
     {
         private readonly Dictionary<byte, string> fieldTypes = new Dictionary<byte, string>();

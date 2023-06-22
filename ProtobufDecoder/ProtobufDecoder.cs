@@ -23,7 +23,7 @@ namespace ProtobufDecoder
             fieldTypes.Add(5, "32-bit (fixed32, sfixed32, float)");
         }
 
-        public void Decode(byte[] data, int root = 0)
+        public void Decode(byte[] data, int level = 0)
         {
             byte fieldType = byte.MaxValue;
             byte fieldId = byte.MaxValue;
@@ -76,7 +76,7 @@ namespace ProtobufDecoder
                 }
                 else if (isLastByte)
                 {
-                    DecodeField(fieldType, fieldId, fieldData.ToArray(), root);
+                    DecodeField(fieldType, fieldId, fieldData.ToArray(), level);
                     fieldData.Clear();
                     fieldType = byte.MaxValue;
                     isFirstByte = true;
@@ -85,38 +85,38 @@ namespace ProtobufDecoder
             }
         }
 
-        public void DecodeField(byte fieldType, byte fieldId, byte[] fieldData, int root)
+        public void DecodeField(byte fieldType, byte fieldId, byte[] fieldData, int level)
         {
             fieldTypes.TryGetValue(fieldType, out string fieldTypeStr);
             Console.WriteLine();
-            Console.WriteLine($"{string.Empty.PadRight(root)}fieldId={fieldId}");
-            Console.WriteLine($"{string.Empty.PadRight(root)}fieldType={fieldTypeStr}");
+            Console.WriteLine($"{string.Empty.PadRight(level * 4)}fieldId={fieldId}");
+            Console.WriteLine($"{string.Empty.PadRight(level * 4)}fieldType={fieldTypeStr}");
             switch (fieldType)
             {
                 case 0:
                     ParseVarint(fieldData, out long longVal);
-                    Console.WriteLine($"{string.Empty.PadRight(root)}val=({longVal});");
+                    Console.WriteLine($"{string.Empty.PadRight(level * 4)}val=({longVal});");
                     break;
                 case 1:
                     Parse64Bit(fieldData, out double doubleVal);
-                    Console.WriteLine($"{string.Empty.PadRight(root)}val=({doubleVal});");
+                    Console.WriteLine($"{string.Empty.PadRight(level * 4)}val=({doubleVal});");
                     break;
                 case 2:
                     ParseLengthDelimited(fieldData, out List<byte[]> valuesBytes);
                     foreach (byte[] value in valuesBytes)
                     {
                         string str = Encoding.UTF8.GetString(value);
-                        Console.WriteLine($"{string.Empty.PadRight(root)}val=({Encoding.UTF8.GetString(value)});");
+                        Console.WriteLine($"{string.Empty.PadRight(level * 4)}val=({Encoding.UTF8.GetString(value)});");
                         try
                         {
-                            Decode(value, root + 4);
+                            Decode(value, level + 1);
                         }
                         catch { }
                     }
                     break;
                 case 5:
                     Parse32Bit(fieldData, out float floatVal);
-                    Console.WriteLine($"{string.Empty.PadRight(root)}val=({floatVal});");
+                    Console.WriteLine($"{string.Empty.PadRight(level * 4)}val=({floatVal});");
                     break;
             }
         }
